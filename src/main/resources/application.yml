@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8002
 security:
   basic:
     enabled: false
@@ -9,6 +9,6 @@ spring:
     url: jdbc:mysql://127.0.0.1:3306/cloud01?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=convertToNull
     username: root
     password: root
-  thymeleaf:
-    mode: LEGACYHTML5
-    cache: false
+  mvc:
+    view:
+      suffix: .html
