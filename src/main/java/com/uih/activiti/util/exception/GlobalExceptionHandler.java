@@ -1,7 +1,7 @@
-package com.test.activiti.util.exception;
+package com.uih.activiti.util.exception;
 
-import com.test.activiti.util.Status;
-import com.test.activiti.util.ToWeb;
+import com.uih.activiti.util.Status;
+import com.uih.activiti.util.ToWeb;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;

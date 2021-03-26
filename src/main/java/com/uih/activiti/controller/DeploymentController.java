@@ -1,8 +1,9 @@
-package com.test.activiti.activiti.controller;
+package com.uih.activiti.controller;
 
-import com.test.activiti.activiti.vo.DeploymentResponse;
-import com.test.activiti.common.RestServiceController;
-import com.test.activiti.util.ToWeb;
+import com.uih.activiti.common.RestServiceController;
+import com.uih.activiti.util.ToWeb;
+import com.uih.activiti.vo.DeploymentResponse;
+
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.springframework.beans.factory.annotation.Autowired;

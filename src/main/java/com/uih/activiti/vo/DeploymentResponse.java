@@ -1,4 +1,4 @@
-package com.test.activiti.activiti.vo;
+package com.uih.activiti.vo;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.activiti.engine.repository.Deployment;
@@ -14,7 +14,9 @@ public class DeploymentResponse {
   private Date deploymentTime;
   private String category;
   private String tenantId;
-  
+
+  public DeploymentResponse() {}
+
   public DeploymentResponse(Deployment deployment) {
     setId(deployment.getId());
     setName(deployment.getName());
@@ -22,7 +24,7 @@ public class DeploymentResponse {
     setCategory(deployment.getCategory());
     setTenantId(deployment.getTenantId());
   }
-  
+
   public String getId() {
     return id;
   }

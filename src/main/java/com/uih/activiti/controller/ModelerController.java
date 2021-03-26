@@ -1,11 +1,11 @@
-package com.test.activiti.activiti.controller;
+package com.uih.activiti.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.test.activiti.common.RestServiceController;
-import com.test.activiti.util.Status;
-import com.test.activiti.util.ToWeb;
+import com.uih.activiti.common.RestServiceController;
+import com.uih.activiti.util.Status;
+import com.uih.activiti.util.ToWeb;
 
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;

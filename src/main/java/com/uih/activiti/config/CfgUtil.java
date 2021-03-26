@@ -1,4 +1,4 @@
-package com.test.activiti.activiti.config;
+package com.uih.activiti.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * @Version 1.0
  **/
 @Configuration
-public class Cfg_Util {
+public class CfgUtil {
 
 
     //jackson xml util

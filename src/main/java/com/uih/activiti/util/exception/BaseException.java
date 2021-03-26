@@ -1,4 +1,4 @@
-package com.test.activiti.util.exception;
+package com.uih.activiti.util.exception;
 
 /**
  * 自定义异常
