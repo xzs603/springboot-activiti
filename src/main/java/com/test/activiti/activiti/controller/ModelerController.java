@@ -10,14 +10,18 @@ import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.constants.ModelDataJsonConstants;
 import org.activiti.editor.language.json.converter.BpmnJsonConverter;
-import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -70,6 +74,38 @@ public class ModelerController implements RestServiceController<Model, String> {
         editorNode.put("stencilset", stencilSetNode);
         repositoryService.addModelEditorSource(id,editorNode.toString().getBytes("utf-8"));
         return ToWeb.buildResult().redirectUrl("/editor?modelId="+id);
+    }
+
+    /**
+     * 导出流程定义文件
+     * @param id
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/bpmn/{id}")
+    public Object export(@PathVariable("id")String id) throws Exception {
+        //获取模型
+        Model modelData = repositoryService.getModel(id);
+        byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
+        if (bytes == null) {
+            return ToWeb.buildResult().status(Status.FAIL)
+                        .msg("模型数据为空，请先设计流程并成功保存，再进行发布。");
+        }
+        JsonNode modelNode = new ObjectMapper().readTree(bytes);
+        BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
+        if(model.getProcesses().size()==0){
+            return ToWeb.buildResult().status(Status.FAIL)
+                        .msg("数据模型不符要求，请至少设计一条主线流程。");
+        }
+        //发布流程
+        String processName = URLEncoder.encode(modelData.getName(), "utf-8") + ".bpmn20.xml";
+        HttpHeaders httpHeaders = new HttpHeaders();
+        // 通知浏览器以下载文件方式打开
+        // application/octet_stream设置MIME为任意二进制数据
+        httpHeaders.setContentType(MediaType.APPLICATION_XML);
+        httpHeaders.setContentDispositionFormData("attachment", processName);
+        // 使用spring自带的工具类也可以 FileCopyUtils
+        return new ResponseEntity<>(new BpmnXMLConverter().convertToXML(model), httpHeaders, HttpStatus.OK);
     }
 
 
