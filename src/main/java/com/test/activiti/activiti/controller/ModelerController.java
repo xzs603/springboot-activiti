@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.test.activiti.common.RestServiceController;
 import com.test.activiti.util.Status;
 import com.test.activiti.util.ToWeb;
+
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.editor.constants.ModelDataJsonConstants;
@@ -18,7 +19,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -83,28 +90,22 @@ public class ModelerController implements RestServiceController<Model, String> {
      * @throws Exception
      */
     @GetMapping("/bpmn/{id}")
-    public Object export(@PathVariable("id")String id) throws Exception {
+    public Object export(@PathVariable("id") String id) throws Exception {
         //获取模型
         Model modelData = repositoryService.getModel(id);
         byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
         if (bytes == null) {
-            return ToWeb.buildResult().status(Status.FAIL)
-                        .msg("模型数据为空，请先设计流程并成功保存，再进行发布。");
+            return ToWeb.buildResult().status(Status.FAIL).msg("模型数据为空，请先设计流程并成功保存，再进行发布。");
         }
-        JsonNode modelNode = new ObjectMapper().readTree(bytes);
+        JsonNode modelNode = objectMapper.readTree(bytes);
         BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-        if(model.getProcesses().size()==0){
-            return ToWeb.buildResult().status(Status.FAIL)
-                        .msg("数据模型不符要求，请至少设计一条主线流程。");
+        if (model.getProcesses().isEmpty()) {
+            return ToWeb.buildResult().status(Status.FAIL).msg("数据模型不符要求，请至少设计一条主线流程。");
         }
-        //发布流程
-        String processName = URLEncoder.encode(modelData.getName(), "utf-8") + ".bpmn20.xml";
         HttpHeaders httpHeaders = new HttpHeaders();
         // 通知浏览器以下载文件方式打开
-        // application/octet_stream设置MIME为任意二进制数据
         httpHeaders.setContentType(MediaType.APPLICATION_XML);
-        httpHeaders.setContentDispositionFormData("attachment", processName);
-        // 使用spring自带的工具类也可以 FileCopyUtils
+        httpHeaders.setContentDispositionFormData("attachment", URLEncoder.encode(modelData.getName(), "utf-8") + ".bpmn20.xml");
         return new ResponseEntity<>(new BpmnXMLConverter().convertToXML(model), httpHeaders, HttpStatus.OK);
     }
 
@@ -123,16 +124,14 @@ public class ModelerController implements RestServiceController<Model, String> {
         byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
 
         if (bytes == null) {
-            return ToWeb.buildResult().status(Status.FAIL)
-                    .msg("模型数据为空，请先设计流程并成功保存，再进行发布。");
+            return ToWeb.buildResult().status(Status.FAIL).msg("模型数据为空，请先设计流程并成功保存，再进行发布。");
         }
 
         JsonNode modelNode = new ObjectMapper().readTree(bytes);
 
         BpmnModel model = new BpmnJsonConverter().convertToBpmnModel(modelNode);
-        if(model.getProcesses().size()==0){
-            return ToWeb.buildResult().status(Status.FAIL)
-                    .msg("数据模型不符要求，请至少设计一条主线流程。");
+        if (model.getProcesses().isEmpty()) {
+            return ToWeb.buildResult().status(Status.FAIL).msg("数据模型不符要求，请至少设计一条主线流程。");
         }
         byte[] bpmnBytes = new BpmnXMLConverter().convertToXML(model);
 
