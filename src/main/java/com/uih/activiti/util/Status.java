@@ -5,6 +5,10 @@ package com.uih.activiti.util;
  * 系统基础参数定义
  */
 public class Status {
+
+    private Status() {
+    }
+
     //状态码
     public final static String SUCCESS = "000";
     public final static String FAIL = "001";

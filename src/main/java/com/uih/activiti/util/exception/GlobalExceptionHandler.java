@@ -16,7 +16,6 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(BaseException.class)
 	@ResponseBody
 	public Object customHandler(BaseException e){
-//		e.printStackTrace();
 		return ToWeb.buildResult().status(e.getCode()).msg(e.getMessage());
 	}
 
