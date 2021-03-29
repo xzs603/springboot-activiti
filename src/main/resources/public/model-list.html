@@ -3,28 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>模型管理</title>
+    <script src="editor-app/libs/jquery_1.11.0/jquery.min.js"></script>
+    <script src="editor-app/libs/bootstrap_3.1.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="editor-app/libs/bootstrap_3.1.1/css/bootstrap.min.css"/>
 </head>
-<body>
+<body class="container">
 <div id="top">
 </div>
 <h2>模型列表</h2>
-<hr>
-<a href="javascript: AJAX.POST('/models/newModel')">绘制流程</a>
-<table border="1" id="model-list">
-    <tr>
-        <td>模型编号</td>
-        <td>模型名称</td>
-        <td>版本</td>
-        <td>创建时间</td>
-        <td>操作</td>
-    </tr>
+<div class="form-group">
+<input type="button" class="btn btn-primary" onclick="javascript: AJAX.POST('/models/newModel')" value="新建流程"/>
+<table class="table table-bordered table-hover" id="model-list">
     <script id="models" type="text/html">
         <tr>
-            <td>模型编号</td>
-            <td>模型名称</td>
-            <td>版本</td>
-            <td>创建时间</td>
-            <td>操作</td>
+            <th>模型编号</th>
+            <th>模型名称</th>
+            <th>版本</th>
+            <th>创建时间</th>
+            <th>操作</th>
         </tr>
         {{each rows.list}}
         <tr>
@@ -44,20 +40,13 @@
 </table>
 <hr>
 <h2>部署列表</h2>
-<hr>
-<table border="1" id="deployment-list">
-    <tr>
-        <td>编号</td>
-        <td>名称</td>
-        <td>部署时间</td>
-        <td>操作</td>
-    </tr>
+<table class="table table-bordered table-hover" id="deployment-list">
     <script id="deployments" type="text/html">
         <tr>
-            <td>编号</td>
-            <td>名称</td>
-            <td>部署时间</td>
-            <td>操作</td>
+            <th>编号</th>
+            <th>名称</th>
+            <th>部署时间</th>
+            <th>操作</th>
         </tr>
     {{each rows.list}}
     <tr>
@@ -69,11 +58,10 @@
     {{/each}}
     </script>
 </table>
-<script src="/lib/js/jquery-1.10.2.min.js"></script>
+</div>
 <script src="/lib/js/jquery.cookie.js"></script>
 <script src="/js/ajax-util.js"></script>
 <script src="/lib/js/template.js"></script>
-
 <script>
 $(function()
 {
