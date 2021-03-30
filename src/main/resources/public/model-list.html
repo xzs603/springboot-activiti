@@ -6,6 +6,36 @@
     <script src="editor-app/libs/jquery_1.11.0/jquery.min.js"></script>
     <script src="editor-app/libs/bootstrap_3.1.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="editor-app/libs/bootstrap_3.1.1/css/bootstrap.min.css"/>
+    <script>
+        $(function(){
+            $('#submit').bind('click', function (event) {
+                event.preventDefault();
+                if($('#file')[0].files[0].size > 10 * 1024 * 1024){
+                    $('#error_message').html("文件大小超过限制...").show();
+                    return;
+                }
+                $.ajax({
+                    url: '/models/importModel',
+                    type: 'POST',
+                    cache: false,
+                    data: new FormData($('#form')[0]),
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if(result['redirectUrl']!=null){
+                            window.location.href = result.redirectUrl;
+                            return;
+                        }
+                        alert(result.msg);
+                    },
+                    error: function (result) {
+                        alert(result.msg);
+                    }
+                });
+            });
+        });
+
+    </script>
 </head>
 <body class="container">
 <div id="top">
@@ -13,30 +43,31 @@
 <h2>模型列表</h2>
 <div class="form-group">
 <input type="button" class="btn btn-primary" onclick="javascript: AJAX.POST('/models/newModel')" value="新建流程"/>
+<input type="button" class="btn btn-primary" onclick="javascript: $('#uploadModal').modal()" value="导入流程"/>
 <table class="table table-bordered table-hover" id="model-list">
-    <script id="models" type="text/html">
-        <tr>
-            <th>模型编号</th>
-            <th>模型名称</th>
-            <th>版本</th>
-            <th>创建时间</th>
-            <th>操作</th>
-        </tr>
-        {{each rows.list}}
-        <tr>
-            <td>{{$value.id}}</td>
-            <td>{{$value.name}}</td>
-            <td>{{$value.version}}</td>
-            <td>{{$value.createTime}}</td>
-            <td>
-             <a href="/editor?modelId={{$value.id}}">编辑</a>
-             <a href="javascript: AJAX.DELETE('/models/{{$value.id}}')">删除</a>
-             <a href="models/bpmn/{{$value.id}}">导出</a>
-             <a href="javascript: AJAX.POST('/models/{{$value.id}}/deployment')">发布</a>
-            </td>
-        </tr>
-        {{/each}}
-    </script>
+<script id="models" type="text/html">
+    <tr>
+        <th>模型编号</th>
+        <th>模型名称</th>
+        <th>版本</th>
+        <th>创建时间</th>
+        <th>操作</th>
+    </tr>
+    {{each rows.list}}
+    <tr>
+        <td>{{$value.id}}</td>
+        <td>{{$value.name}}</td>
+        <td>{{$value.version}}</td>
+        <td>{{$value.createTime}}</td>
+        <td>
+         <a href="/editor?modelId={{$value.id}}">编辑</a>
+         <a href="javascript: AJAX.DELETE('/models/{{$value.id}}')">删除</a>
+         <a href="models/bpmn/{{$value.id}}">导出</a>
+         <a href="javascript: AJAX.POST('/models/{{$value.id}}/deployment')">发布</a>
+        </td>
+    </tr>
+    {{/each}}
+</script>
 </table>
 <hr>
 <h2>部署列表</h2>
@@ -58,6 +89,33 @@
     {{/each}}
     </script>
 </table>
+</div>
+<!-- 模态框（Modal） -->
+<div class="container">
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">上传文件</h4>
+                </div>
+
+                <div class="modal-body">
+                    <form action="/models/importModel" id="form">
+                    <div class="form-group">
+                        <label for="file" class="label label-default">文件</label>
+                        <input type="file" name="file" id="file" required="required"
+                               class="form-control" />
+                    </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <input type="submit" id="submit" value="提交" class="btn btn-primary"/>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <script src="/lib/js/jquery.cookie.js"></script>
 <script src="/js/ajax-util.js"></script>

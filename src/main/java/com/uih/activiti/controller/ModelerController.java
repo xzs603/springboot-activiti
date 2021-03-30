@@ -14,6 +14,8 @@ import org.activiti.editor.language.json.converter.BpmnJsonConverter;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,10 +28,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 /**
  * 模型管理
@@ -37,6 +44,8 @@ import java.util.List;
 @RestController
 @RequestMapping("models")
 public class ModelerController implements RestServiceController<Model, String> {
+
+    private Logger LOG = LoggerFactory.getLogger(ModelerController.class);
 
     @Autowired
     RepositoryService repositoryService;
@@ -84,13 +93,55 @@ public class ModelerController implements RestServiceController<Model, String> {
     }
 
     /**
+     * 导入流程定义文件
+     *
+     * @param file
+     * @return
+     * @throws Exception
+     */
+    @PostMapping(value = "/importModel")
+    public ToWeb importModel(@RequestParam("file") MultipartFile file) throws Exception {
+        String originalFilename = file.getOriginalFilename();
+        if (!originalFilename.endsWith(".bpmn20.xml")) {
+            return ToWeb.buildResult().status(Status.FAIL).msg("文件类型错误！");
+        }
+        LOG.info("originalFilename is {}", originalFilename);
+        String modelName = originalFilename.replace(".bpmn20.xml", "");
+        int revision = 1;
+        String key = "imported-process";
+
+        XMLInputFactory xif = XMLInputFactory.newInstance();
+        InputStreamReader in = new InputStreamReader(file.getInputStream(), "UTF-8");
+        XMLStreamReader xtr = xif.createXMLStreamReader(in);
+        BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
+        BpmnJsonConverter converter = new BpmnJsonConverter();
+        ObjectNode modelNode = converter.convertToJson(bpmnModel);
+        modelNode.put(ModelDataJsonConstants.MODEL_NAME, modelName);
+        modelNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
+
+        Model modelData = repositoryService.newModel();
+        modelData.setName(modelName);
+        modelData.setVersion(revision);
+        modelData.setKey(key);
+        ObjectNode modelObjectNode = new ObjectMapper().createObjectNode();
+        modelObjectNode.put(ModelDataJsonConstants.MODEL_NAME, modelName);
+        modelObjectNode.put(ModelDataJsonConstants.MODEL_REVISION, 1);
+        modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, "");
+        modelData.setMetaInfo(modelObjectNode.toString());
+        repositoryService.saveModel(modelData);
+        repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
+        return ToWeb.buildResult().redirectUrl("/editor?modelId=" + modelData.getId());
+    }
+
+    /**
      * 导出流程定义文件
+     *
      * @param id
      * @return
      * @throws Exception
      */
     @GetMapping("/bpmn/{id}")
-    public Object export(@PathVariable("id") String id) throws Exception {
+    public Object exportModel(@PathVariable("id") String id) throws Exception {
         //获取模型
         Model modelData = repositoryService.getModel(id);
         byte[] bytes = repositoryService.getModelEditorSource(modelData.getId());
