@@ -2,6 +2,9 @@ package com.uih.activiti.util.exception;
 
 import com.uih.activiti.util.Status;
 import com.uih.activiti.util.ToWeb;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+	private static Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 	//处理自定义的异常
 	@ExceptionHandler(BaseException.class)
@@ -23,7 +28,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	@ResponseBody
 	public Object exceptionHandler(Exception e){
-		e.printStackTrace();
+		LOG.error("GlobalExceptionHandler", e);
 		return ToWeb.buildResult().status(Status.FAIL).msg("系统错误");
 	}
 }

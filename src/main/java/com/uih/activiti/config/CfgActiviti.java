@@ -10,13 +10,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
-/**
- * @Classname Cfg_Activiti
- * @Description activiti工作流配置
- * @Author xiedong
- * @Date 2019/10/21 11:31
- * @Version 1.0
- **/
 @Configuration
 public class CfgActiviti {
 
@@ -26,7 +19,7 @@ public class CfgActiviti {
         SpringProcessEngineConfiguration processEngineConfiguration = new SpringProcessEngineConfiguration();
         processEngineConfiguration.setDataSource(dataSource);
         processEngineConfiguration.setDatabaseSchemaUpdate("true");
-        processEngineConfiguration.setDatabaseType("mysql");
+        processEngineConfiguration.setDatabaseType("h2");
 
         processEngineConfiguration.setTransactionManager(transactionManager);
 
