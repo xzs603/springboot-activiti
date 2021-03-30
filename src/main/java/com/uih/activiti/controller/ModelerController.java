@@ -45,6 +45,9 @@ import javax.xml.stream.XMLStreamReader;
 @RequestMapping("models")
 public class ModelerController implements RestServiceController<Model, String> {
 
+    public static final String UTF_8 = "utf-8";
+    public static final String BPMN_20_XML = ".bpmn20.xml";
+
     private Logger LOG = LoggerFactory.getLogger(ModelerController.class);
 
     @Autowired
@@ -88,7 +91,7 @@ public class ModelerController implements RestServiceController<Model, String> {
         stencilSetNode.put("namespace",
                 "http://b3mn.org/stencilset/bpmn2.0#");
         editorNode.set("stencilset", stencilSetNode);
-        repositoryService.addModelEditorSource(id,editorNode.toString().getBytes("utf-8"));
+        repositoryService.addModelEditorSource(id,editorNode.toString().getBytes(UTF_8));
         return ToWeb.buildResult().redirectUrl("/editor?modelId="+id);
     }
 
@@ -102,16 +105,16 @@ public class ModelerController implements RestServiceController<Model, String> {
     @PostMapping(value = "/importModel")
     public ToWeb importModel(@RequestParam("file") MultipartFile file) throws Exception {
         String originalFilename = file.getOriginalFilename();
-        if (!originalFilename.endsWith(".bpmn20.xml")) {
+        if (!originalFilename.endsWith(BPMN_20_XML)) {
             return ToWeb.buildResult().status(Status.FAIL).msg("文件类型错误！");
         }
         LOG.info("originalFilename is {}", originalFilename);
-        String modelName = originalFilename.replace(".bpmn20.xml", "");
+        String modelName = originalFilename.replace(BPMN_20_XML, "");
         int revision = 1;
         String key = "imported-process";
 
         XMLInputFactory xif = XMLInputFactory.newInstance();
-        InputStreamReader in = new InputStreamReader(file.getInputStream(), "UTF-8");
+        InputStreamReader in = new InputStreamReader(file.getInputStream(), UTF_8);
         XMLStreamReader xtr = xif.createXMLStreamReader(in);
         BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(xtr);
         BpmnJsonConverter converter = new BpmnJsonConverter();
@@ -129,7 +132,7 @@ public class ModelerController implements RestServiceController<Model, String> {
         modelObjectNode.put(ModelDataJsonConstants.MODEL_DESCRIPTION, "");
         modelData.setMetaInfo(modelObjectNode.toString());
         repositoryService.saveModel(modelData);
-        repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes("utf-8"));
+        repositoryService.addModelEditorSource(modelData.getId(), modelNode.toString().getBytes(UTF_8));
         return ToWeb.buildResult().redirectUrl("/editor?modelId=" + modelData.getId());
     }
 
@@ -156,7 +159,7 @@ public class ModelerController implements RestServiceController<Model, String> {
         HttpHeaders httpHeaders = new HttpHeaders();
         // 通知浏览器以下载文件方式打开
         httpHeaders.setContentType(MediaType.APPLICATION_XML);
-        httpHeaders.setContentDispositionFormData("attachment", URLEncoder.encode(modelData.getName(), "utf-8") + ".bpmn20.xml");
+        httpHeaders.setContentDispositionFormData("attachment", URLEncoder.encode(modelData.getName(), UTF_8) + BPMN_20_XML);
         return new ResponseEntity<>(new BpmnXMLConverter().convertToXML(model), httpHeaders, HttpStatus.OK);
     }
 
@@ -187,7 +190,7 @@ public class ModelerController implements RestServiceController<Model, String> {
         byte[] bpmnBytes = new BpmnXMLConverter().convertToXML(model);
 
         //发布流程
-        String processName = modelData.getName() + ".bpmn20.xml";
+        String processName = modelData.getName() + BPMN_20_XML;
         Deployment deployment = repositoryService.createDeployment()
                 .name(modelData.getName())
                 .addString(processName, new String(bpmnBytes, "UTF-8"))
